@@ -81,6 +81,6 @@ void              netbios_session_packet_init(netbios_session *s);
 int               netbios_session_packet_append(netbios_session *s,
         const char *data, size_t size);
 int               netbios_session_packet_send(netbios_session *s);
-ssize_t           netbios_session_packet_recv(netbios_session *s, void **data);
+int           netbios_session_packet_recv(netbios_session *s, void **data);
 
 #endif

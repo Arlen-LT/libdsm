@@ -32,11 +32,15 @@
 # include "config.h"
 #endif
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#define closesocket(fd) close(fd)
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdbool.h>
 
 #ifdef HAVE_ARPA_INET_H
@@ -219,7 +223,7 @@ void              netbios_session_abort(netbios_session *s)
 int netbios_session_connect(uint32_t ip, netbios_session *s,
                             const char *name, int direct_tcp)
 {
-    ssize_t                   recv_size;
+    int                   recv_size;
     char                      *encoded_name = NULL;
     uint16_t                  ports[2];
     unsigned int              nb_ports;
@@ -319,7 +323,7 @@ int               netbios_session_packet_append(netbios_session *s,
 
 int               netbios_session_packet_send(netbios_session *s)
 {
-    ssize_t         to_send;
+    int         to_send;
 
     assert(s && s->packet && s->socket >= 0 && s->state > 0);
 
@@ -358,7 +362,7 @@ int               netbios_session_packet_send(netbios_session *s)
 
         if (FD_ISSET(s->socket, &write_fds))
         {
-            ssize_t sent = send(s->socket, (void *)s->packet, to_send, MSG_NOSIGNAL);
+            int sent = send(s->socket, (void *)s->packet, to_send, MSG_NOSIGNAL);
 
             if (sent != to_send)
             {
@@ -373,7 +377,7 @@ int               netbios_session_packet_send(netbios_session *s)
     return 0;
 }
 
-static ssize_t netbios_session_recv(netbios_session *s, void *buf, size_t len)
+static int netbios_session_recv(netbios_session *s, void *buf, size_t len)
 {
     while (true)
     {
@@ -406,7 +410,7 @@ static ssize_t netbios_session_recv(netbios_session *s, void *buf, size_t len)
 
         if (FD_ISSET(s->socket, &read_fds))
         {
-            ssize_t res = recv(s->socket, buf, len, 0);
+            int res = recv(s->socket, buf, len, 0);
 
             if (res <= 0)
                 BDSM_perror("netbios_session_recv: recv: ");
@@ -417,9 +421,9 @@ static ssize_t netbios_session_recv(netbios_session *s, void *buf, size_t len)
     return -1;
 }
 
-static ssize_t    netbios_session_get_next_packet(netbios_session *s)
+static int    netbios_session_get_next_packet(netbios_session *s)
 {
-    ssize_t         res;
+    int         res;
     size_t          total, sofar;
 
     assert(s != NULL && s->packet != NULL && s->socket >= 0 && s->state > 0);
@@ -467,9 +471,9 @@ static ssize_t    netbios_session_get_next_packet(netbios_session *s)
     return sofar;
 }
 
-ssize_t           netbios_session_packet_recv(netbios_session *s, void **data)
+int           netbios_session_packet_recv(netbios_session *s, void **data)
 {
-    ssize_t         size;
+    int         size;
 
     // ignore keepalive messages if needed
     do

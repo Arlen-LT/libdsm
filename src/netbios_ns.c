@@ -42,7 +42,10 @@
 #include <sys/time.h>
 #endif
 
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
@@ -56,6 +59,8 @@
 #ifdef _WIN32
 # include <winsock2.h>
 # include <ws2tcpip.h>
+# include "queue.h"
+# include "pthread.h"
 #endif
 #ifdef HAVE_SYS_SOCKET_H
 # include <sys/socket.h>
@@ -172,7 +177,7 @@ static uint16_t query_type_nb = 0x2000;
 static uint16_t query_type_nbstat = 0x2100;
 static uint16_t query_class_in = 0x0100;
 
-static ssize_t netbios_ns_send_packet(netbios_ns* ns, netbios_query* q, uint32_t ip)
+static int netbios_ns_send_packet(netbios_ns* ns, netbios_query* q, uint32_t ip)
 {
     struct sockaddr_in  addr;
 
@@ -323,7 +328,7 @@ static int netbios_ns_send_name_query(netbios_ns *ns,
 
     if (ip != 0)
     {
-        ssize_t sent = netbios_ns_send_packet(ns, q, ip);
+        int sent = netbios_ns_send_packet(ns, q, ip);
         if (sent < 0)
         {
             BDSM_perror("netbios_ns_send_name_query: ");
@@ -451,7 +456,7 @@ static int netbios_ns_handle_query(netbios_ns *ns, size_t size,
     return 0;
 }
 
-static ssize_t netbios_ns_recv(netbios_ns *ns,
+static int netbios_ns_recv(netbios_ns *ns,
                                struct timeval *timeout,
                                struct sockaddr_in *out_addr,
                                bool check_trn_id,
@@ -505,7 +510,7 @@ static ssize_t netbios_ns_recv(netbios_ns *ns,
         {
             struct sockaddr_in addr;
             socklen_t addr_len = sizeof(struct sockaddr_in);
-            ssize_t size;
+            int size;
 
             size = recvfrom(sock, ns->buffer, RECV_BUFFER_SIZE, 0,
                            (struct sockaddr *)&addr, &addr_len);
@@ -675,7 +680,7 @@ int      netbios_ns_resolve(netbios_ns *ns, const char *name, char type, uint32_
     netbios_ns_entry    *cached;
     struct timeval      timeout;
     char                *encoded_name;
-    ssize_t             recv;
+    int             recv;
     netbios_ns_name_query name_query;
 
     assert(ns != NULL && !ns->discover_started);
@@ -726,7 +731,7 @@ static netbios_ns_entry *netbios_ns_inverse_internal(netbios_ns *ns, uint32_t ip
 {
     netbios_ns_entry  *cached;
     struct timeval      timeout;
-    ssize_t             recv;
+    int             recv;
     netbios_ns_name_query name_query;
     netbios_ns_entry *entry;
 
