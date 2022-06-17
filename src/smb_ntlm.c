@@ -136,13 +136,14 @@ void        smb_ntlm2_hash(const char *user, const char *password,
 
     smb_ntlm_hash(password, hash_v1);
 
-    strlcpy(user_upper, user, 64);
+    memcpy(user_upper, user, 64);
+    user_upper[63] = '\0';
     _upcase(user_upper);
 
     ucs_user_len  = smb_to_utf16(user_upper, strlen(user_upper), &ucs_user);
     ucs_dest_len  = smb_to_utf16(dest, strlen(dest), &ucs_dest);
     data_len      = ucs_user_len + ucs_dest_len;
-    data          = alloca(data_len);
+    data          = malloc(data_len);
 
     memcpy(data, ucs_user, ucs_user_len);
     memcpy(data + ucs_user_len, ucs_dest, ucs_dest_len);
@@ -151,6 +152,7 @@ void        smb_ntlm2_hash(const char *user, const char *password,
 
     free(ucs_user);
     free(ucs_dest);
+    free(data);
 }
 
 uint8_t     *smb_ntlm2_response(smb_ntlmh hash_v2, uint64_t srv_challenge,

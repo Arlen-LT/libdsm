@@ -65,9 +65,10 @@ int smb_tree_connect(smb_session *s, const char *name, smb_tid *tid)
 
     // Build \\SERVER\Share path from name
     path_len  = strlen(name) + strlen(s->srv.name) + 4;
-    path      = alloca(path_len);
+    path      = malloc(path_len);
     snprintf(path, path_len, "\\\\%s\\%s", s->srv.name, name);
     utf_path_len = smb_to_utf16(path, strlen(path) + 1, &utf_path);
+    free(path);
 
     // Packet headers
     req_msg->packet->header.tid   = 0xffff; // Behavior of libsmbclient

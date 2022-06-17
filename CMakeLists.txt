@@ -1,10 +1,16 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.18)
 
 project(libdsm
         LANGUAGES C
         VERSION 0.4.3)
 
-add_library(dsm)
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
+endif()
+
+include (CheckFunctionExists)
+CHECK_FUNCTION_EXISTS(strndup HAVE_STRNDUP)
+CHECK_FUNCTION_EXISTS(strndup HAVE_STRNDUP)
 
 INCLUDE (CheckIncludeFiles)
 CHECK_INCLUDE_FILES("stdatomic.h" HAVE_STDATOMIC_H)
@@ -13,6 +19,16 @@ include(CheckTypeSize)
 SET(CMAKE_EXTRA_INCLUDE_FILES time.h)
 CHECK_TYPE_SIZE("struct timespec" HAVE_STRUCT_TIMESPEC)
 SET(CMAKE_EXTRA_INCLUDE_FILES)
+
+message(${CMAKE_SOURCE_DIR})
+add_library(dsm SHARED)
+target_link_libraries(dsm 
+    "${CMAKE_SOURCE_DIR}/lib/libiconv.lib"
+    "${CMAKE_SOURCE_DIR}/lib/libtasn1.lib"
+    "${CMAKE_SOURCE_DIR}/lib/pthreadVC2.lib"
+    ws2_32
+)
+
 
 if(HAVE_STRUCT_TIMESPEC)
     target_compile_definitions(dsm PRIVATE HAVE_STRUCT_TIMESPEC)
@@ -49,4 +65,6 @@ target_sources(dsm PRIVATE
     "contrib/mdx/md4.c"
     "contrib/mdx/md5.c"
     "contrib/rc4/rc4.c"
+    "compat/strndup.c"
+    "contrib/spnego/spnego_asn1.c"
 )
