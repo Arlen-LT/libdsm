@@ -195,7 +195,7 @@ bool netbios_abort_ctx_is_aborted(struct netbios_abort_ctx *ctx)
 void netbios_abort_ctx_abort(struct netbios_abort_ctx *ctx)
 {
     uint8_t buf = '\0';
-    int ret = write(ctx->pipe[1], &buf, sizeof(uint8_t));
+    ssize_t ret = write(ctx->pipe[1], &buf, sizeof(uint8_t));
     (void) ret;
 }
 

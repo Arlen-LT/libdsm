@@ -64,7 +64,7 @@ int             smb_session_send_msg(smb_session *s, smb_message *msg)
 size_t          smb_session_recv_msg(smb_session *s, smb_message *msg)
 {
     void                      *data;
-    int                   payload_size;
+    ssize_t                   payload_size;
 
     assert(s != NULL && s->transport.session != NULL);
 

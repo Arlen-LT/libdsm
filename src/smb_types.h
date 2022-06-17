@@ -45,7 +45,7 @@
 # include <netinet/ip.h>
 #else
 # include <winsock2.h>
-//typedef int int;
+typedef SSIZE_T ssize_t;
 #endif
 
 #include "bdsm/smb_types.h"
@@ -95,7 +95,7 @@ struct smb_transport
     void              (*pkt_init)(void *s);
     int               (*pkt_append)(void *s, void *data, size_t size);
     int               (*send)(void *s);
-    int           (*recv)(void *s, void **data);
+    ssize_t           (*recv)(void *s, void **data);
 };
 
 typedef struct smb_srv_info smb_srv_info;

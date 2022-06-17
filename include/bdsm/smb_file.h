@@ -82,7 +82,7 @@ void      smb_fclose(smb_session *s, smb_fd fd);
  * @return The number of bytes read or -1 in case of error.
  */
 BDSM_EXPORT
-int   smb_fread(smb_session *s, smb_fd fd, void *buf, size_t buf_size);
+ssize_t   smb_fread(smb_session *s, smb_fd fd, void *buf, size_t buf_size);
 
 /**
  * @brief Write to an open file
@@ -97,7 +97,7 @@ int   smb_fread(smb_session *s, smb_fd fd, void *buf, size_t buf_size);
  * @return The number of bytes written or -1 in case of error.
  */
 BDSM_EXPORT
-int   smb_fwrite(smb_session *s, smb_fd fd, void *buf, size_t buf_size);
+ssize_t   smb_fwrite(smb_session *s, smb_fd fd, void *buf, size_t buf_size);
 
 /**
  * @brief Sets/Moves/Get the read/write pointer for a given file
@@ -118,7 +118,7 @@ int   smb_fwrite(smb_session *s, smb_fd fd, void *buf, size_t buf_size);
  * @return The current read pointer position or -1 on error
  */
 BDSM_EXPORT
-int   smb_fseek(smb_session *s, smb_fd fd, off_t offset, int whence);
+ssize_t   smb_fseek(smb_session *s, smb_fd fd, off_t offset, int whence);
 
 /**
  * @brief remove a file on a share.

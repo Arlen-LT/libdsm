@@ -45,7 +45,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef HAVE_UNISTD_H
+#ifdef HAV_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -136,8 +136,7 @@ void        smb_ntlm2_hash(const char *user, const char *password,
 
     smb_ntlm_hash(password, hash_v1);
 
-    memcpy(user_upper, user, 64);
-    user_upper[63] = '\0';
+    strlcpy(user_upper, user, 64);
     _upcase(user_upper);
 
     ucs_user_len  = smb_to_utf16(user_upper, strlen(user_upper), &ucs_user);

@@ -32,7 +32,7 @@
 # include "config.h"
 #endif
 
-#ifdef HAVE_UNISTD_H
+#ifdef HAV_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -197,7 +197,7 @@ int           smb_tree_disconnect(smb_session *s, smb_tid tid)
 
 // Here we parse the NetShareEnumAll response packet payload to extract
 // The share list.
-static int  smb_share_parse_enum(smb_message *msg, char ***list)
+static ssize_t  smb_share_parse_enum(smb_message *msg, char ***list)
 {
     uint32_t          share_count, i;
     uint8_t           *data, *eod;
@@ -289,7 +289,7 @@ int             smb_share_get_list(smb_session *s, smb_share_list *list, size_t 
     smb_fd                srvscv_fd;
     uint16_t              rpc_len;
     size_t                res, frag_len_cursor;
-    int               count;
+    ssize_t               count;
     int                   ret;
 
     assert(s != NULL && list != NULL);

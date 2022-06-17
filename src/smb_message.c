@@ -37,7 +37,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#ifdef HAVE_UNISTD_H
+#ifdef HAV_UNISTD_H
 #include <unistd.h>
 #endif
 

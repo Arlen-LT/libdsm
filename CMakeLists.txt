@@ -65,6 +65,7 @@ target_sources(dsm PRIVATE
     "contrib/mdx/md4.c"
     "contrib/mdx/md5.c"
     "contrib/rc4/rc4.c"
+    "compat/strlcpy.c"
     "compat/strndup.c"
     "contrib/spnego/spnego_asn1.c"
 )

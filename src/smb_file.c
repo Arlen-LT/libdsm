@@ -32,7 +32,7 @@
 # include "config.h"
 #endif
 
-#ifdef HAVE_UNISTD_H
+#ifdef HAV_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -41,6 +41,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "smb_types.h"
 #include "smb_session_msg.h"
 #include "smb_fd.h"
 #include "smb_utils.h"
@@ -188,7 +189,7 @@ void        smb_fclose(smb_session *s, smb_fd fd)
     free(file);
 }
 
-int   smb_fread(smb_session *s, smb_fd fd, void *buf, size_t buf_size)
+ssize_t   smb_fread(smb_session *s, smb_fd fd, void *buf, size_t buf_size)
 {
     smb_file        *file;
     smb_message     *req_msg, resp_msg;
@@ -254,7 +255,7 @@ int   smb_fread(smb_session *s, smb_fd fd, void *buf, size_t buf_size)
     return resp->data_len;
 }
 
-int   smb_fwrite(smb_session *s, smb_fd fd, void *buf, size_t buf_size)
+ssize_t   smb_fwrite(smb_session *s, smb_fd fd, void *buf, size_t buf_size)
 {
     smb_file       *file;
     smb_message    *req_msg, resp_msg;
@@ -316,7 +317,7 @@ int   smb_fwrite(smb_session *s, smb_fd fd, void *buf, size_t buf_size)
     return resp->data_len;
 }
 
-int   smb_fseek(smb_session *s, smb_fd fd, off_t offset, int whence)
+ssize_t   smb_fseek(smb_session *s, smb_fd fd, off_t offset, int whence)
 {
     smb_file  *file;
 

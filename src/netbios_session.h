@@ -40,6 +40,7 @@
 # include <winsock2.h>
 #endif
 
+#include "smb_types.h"
 #include "netbios_defs.h"
 #include "netbios_utils.h"
 
@@ -81,6 +82,6 @@ void              netbios_session_packet_init(netbios_session *s);
 int               netbios_session_packet_append(netbios_session *s,
         const char *data, size_t size);
 int               netbios_session_packet_send(netbios_session *s);
-int           netbios_session_packet_recv(netbios_session *s, void **data);
+ssize_t           netbios_session_packet_recv(netbios_session *s, void **data);
 
 #endif

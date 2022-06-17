@@ -32,10 +32,6 @@
 # include "config.h"
 #endif
 
-#ifdef _WIN32
-#include "compat.h"
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
