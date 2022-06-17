@@ -10,10 +10,15 @@ endif()
 
 include (CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(strndup HAVE_STRNDUP)
-CHECK_FUNCTION_EXISTS(strndup HAVE_STRNDUP)
 
 INCLUDE (CheckIncludeFiles)
 CHECK_INCLUDE_FILES("stdatomic.h" HAVE_STDATOMIC_H)
+CHECK_INCLUDE_FILES("unistd.h" HAVE_UINTSTD_H)
+CHECK_INCLUDE_FILES("ifaddrs.h" HAVE_IFADDRS_H)
+CHECK_INCLUDE_FILES("sys/queue.h" HAVE_SYS_QUEUE_H)
+CHECK_INCLUDE_FILES("sys/socket.h" HAVE_SYS_SOCKET_H)
+CHECK_INCLUDE_FILES("sys/time.h" HAVE_SYS_TIME_H)
+CHECK_INCLUDE_FILES("arpa/inet.h" HAVE_ARPA_INET_H)
 
 include(CheckTypeSize)
 SET(CMAKE_EXTRA_INCLUDE_FILES time.h)
@@ -26,14 +31,37 @@ if(MSVC AND BUILD_SHARED_LIBS)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${DEF_FILE_PATH}")
 endif()
 add_library(dsm SHARED)
+
+if(WIN32)
 target_link_libraries(dsm 
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/libiconv.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/libtasn1.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/pthreadVC2.lib"
     ws2_32
 )
+endif()
 
-
+if(HAVE_STDATOMIC_H)
+    target_compile_definitions(dsm PRIVATE HAVE_STDATOMIC_H)
+endif()
+if(HAVE_UINTSTD_H)
+    target_compile_definitions(dsm PRIVATE HAVE_UINTSTD_H)
+endif()
+if(HAVE_IFADDRS_H)
+    target_compile_definitions(dsm PRIVATE HAVE_IFADDRS_H)
+endif()
+if(HAVE_SYS_QUEUE_H)
+    target_compile_definitions(dsm PRIVATE HAVE_SYS_QUEUE_H)
+endif()
+if(HAVE_SYS_SOCKET_H)
+    target_compile_definitions(dsm PRIVATE HAVE_SYS_SOCKET_H)
+endif()
+if(HAVE_SYS_TIME_H)
+    target_compile_definitions(dsm PRIVATE HAVE_SYS_TIME_H)
+endif()
+if(HAVE_ARPA_INET_H)
+    target_compile_definitions(dsm PRIVATE HAVE_ARPA_INET_H)
+endif()
 if(HAVE_STRUCT_TIMESPEC)
     target_compile_definitions(dsm PRIVATE HAVE_STRUCT_TIMESPEC)
 endif()
@@ -44,7 +72,7 @@ target_include_directories(dsm PRIVATE
     "contrib"
     "include"
     "include/bdsm"
-    "include/msvc"
+    "$<$<BOOL:${MSVC}>:${CMAKE_CURRENT_SOURCE_DIR}/include/msvc"
 )
 target_sources(dsm PRIVATE 
     "src/hmac_md5.c"
