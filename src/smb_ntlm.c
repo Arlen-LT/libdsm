@@ -68,7 +68,7 @@ uint64_t    smb_ntlm_generate_challenge()
     uint64_t        result;
     int             fd;
 
-    fd = open(URANDOM, O_RDONLY);
+    fd = open("dev/urandom", O_RDONLY);
     if (fd >= 0)
     {
         while(read(fd, (void *)&result, sizeof(result)) != sizeof(result))

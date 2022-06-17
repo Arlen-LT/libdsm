@@ -72,7 +72,7 @@ target_include_directories(dsm PRIVATE
     "contrib"
     "include"
     "include/bdsm"
-    "$<$<BOOL:${MSVC}>:${CMAKE_CURRENT_SOURCE_DIR}/include/msvc"
+    "$<$<BOOL:${MSVC}>:${CMAKE_CURRENT_SOURCE_DIR}/include/msvc>"
 )
 target_sources(dsm PRIVATE 
     "src/hmac_md5.c"
