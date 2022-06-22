@@ -873,7 +873,10 @@ static void *netbios_ns_discover_thread(void *opaque)
 
                 // if entry is already valid, don't send NBSTAT query
                 if (entry->flag & NS_ENTRY_FLAG_VALID_NAME)
+                {
+                    ns->discover_callbacks.pf_on_entry_added(ns->discover_callbacks.p_opaque, entry);
                     continue;
+                }
 
                 // send NBSTAT query
                 if (netbios_ns_send_name_query(ns, ip, NAME_QUERY_TYPE_NBSTAT,
