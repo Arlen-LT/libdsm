@@ -281,11 +281,10 @@ void            smb_share_list_destroy(smb_share_list list)
 // We should normally implement SCERPC and SRVSVC to perform a share list. But
 // since these two protocols have no other use for us, we'll do it the trash way
 // PS: Worst function _EVER_. I don't understand a bit myself
-int             smb_share_get_list(smb_session *s, smb_share_list *list, size_t *pcount)
+int             smb_share_get_list(smb_session *s, smb_tid ipc_tid, smb_share_list *list, size_t *pcount)
 {
     smb_message           *req, resp;
     smb_trans_req         trans;
-    smb_tid               ipc_tid;
     smb_fd                srvscv_fd;
     uint16_t              rpc_len;
     size_t                res, frag_len_cursor;
@@ -294,9 +293,6 @@ int             smb_share_get_list(smb_session *s, smb_share_list *list, size_t 
 
     assert(s != NULL && list != NULL);
     *list = NULL;
-
-    if ((ret = smb_tree_connect(s, "IPC$", &ipc_tid)) != DSM_SUCCESS)
-        return ret;
 
     if ((ret = smb_fopen(s, ipc_tid, "\\srvsvc", SMB_MOD_READ | SMB_MOD_WRITE,
                          &srvscv_fd)) != DSM_SUCCESS)

@@ -46,13 +46,14 @@
  * starting with a $ are supposed to be system/hidden share.
  *
  * @param[in] s The session object
+ * @param[in] ipc_tid must be got by smb_tree_connect() with "IPC$"
  * @param[out] list A pointer to an opaque share_list object.
  * @param[out] pointer to the number of elements in the list
  *
  * @return 0 on success or a DSM error code in case of error
  */
 BDSM_EXPORT
-int             smb_share_get_list(smb_session *s, smb_share_list *list, size_t *p_count);
+int             smb_share_get_list(smb_session *s, smb_tid ipc_tid, smb_share_list *list, size_t *p_count);
 
 /**
  * @brief Get the number of share in the list
