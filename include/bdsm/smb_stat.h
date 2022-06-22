@@ -128,6 +128,16 @@ BDSM_EXPORT
 smb_stat        smb_stat_list_at(smb_stat_list list, size_t index);
 
 /**
+ * @brief Get the element at the given position.
+ *
+ * @param list A stat list
+ *
+ * @return An opaque smb_stat at current position read sequentially or NULL in case of error
+ */
+BDSM_EXPORT
+smb_stat        smb_stat_list_read(smb_stat_list* list);
+
+/**
  * @brief Destroy and release a list of file stat returned by smb_find
  *
  * @param list The stat_list to free

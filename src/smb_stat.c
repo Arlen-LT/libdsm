@@ -94,6 +94,17 @@ smb_stat        smb_stat_list_at(smb_stat_list list, size_t index)
     return list;
 }
 
+smb_stat        smb_stat_list_read(smb_stat_list* list)
+{
+    smb_file* file;
+    if (*list == NULL)
+        return NULL;
+
+    file = *list;
+    *list = (*list)->next;
+    return file;
+}
+
 const char        *smb_stat_name(smb_stat info)
 {
     if (info == NULL)
