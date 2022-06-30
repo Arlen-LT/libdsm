@@ -46,6 +46,9 @@
 #if defined(__ANDROID__)
 # undef  off_t
 # define off_t off64_t
+#elif defined(_WIN32)
+#include <basetsd.h>
+typedef SSIZE_T ssize_t;
 #endif
 /**
   * @struct smb_tid

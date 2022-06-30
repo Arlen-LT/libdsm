@@ -45,7 +45,6 @@
 # include <netinet/ip.h>
 #else
 # include <winsock2.h>
-typedef SSIZE_T ssize_t;
 #endif
 
 #include "bdsm/smb_types.h"
