@@ -3,6 +3,7 @@ EXPORTS
 netbios_ns_entry_name
 netbios_ns_entry_group
 netbios_ns_entry_ip
+netbios_ns_entry_ip_char
 netbios_ns_entry_type
 netbios_ns_new
 netbios_ns_destroy
