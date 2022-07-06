@@ -792,6 +792,13 @@ uint32_t netbios_ns_entry_ip(netbios_ns_entry *entry)
     return entry ? entry->address.s_addr : 0;
 }
 
+const char* netbios_ns_entry_ip_char(netbios_ns_entry* entry)
+{
+    struct in_addr addr;
+    addr.s_addr = netbios_ns_entry_ip(entry);
+    return inet_ntoa(addr);
+}
+
 char netbios_ns_entry_type(netbios_ns_entry *entry)
 {
     return entry ? entry->type : -1;

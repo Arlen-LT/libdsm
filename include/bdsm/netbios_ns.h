@@ -71,6 +71,13 @@ BDSM_EXPORT
 uint32_t            netbios_ns_entry_ip(netbios_ns_entry *entry);
 
 /**
+* @brief Return the IP address char of the correspondance referenced by the iterator
+*
+* @return The ip address of this entry, in network byte order.
+*/
+const char*         netbios_ns_entry_ip_char(netbios_ns_entry* entry);
+
+/**
  * @brief Return the type of record
  *
  * @return The type of netbios record (.ie 0x20 for FileServer,
