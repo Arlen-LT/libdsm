@@ -25,18 +25,19 @@ SET(CMAKE_EXTRA_INCLUDE_FILES time.h)
 CHECK_TYPE_SIZE("struct timespec" HAVE_STRUCT_TIMESPEC)
 SET(CMAKE_EXTRA_INCLUDE_FILES)
 
-set(BUILD_SHARED_LIBS ON)
+add_library(dsm STATIC)
+
 if(MSVC AND BUILD_SHARED_LIBS)
-    set(DEF_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/dsm.def)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${DEF_FILE_PATH}")
+    set_target_properties(dsm PROPERTIES DEF_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/dsm.def)
+    set_target_properties(dsm PROPERTIES CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${DEF_FILE_PATH}")
+
 endif()
-add_library(dsm SHARED)
 
 if(WIN32)
 target_link_libraries(dsm 
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/libiconv.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/libtasn1.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/pthreadVC2.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/libpthreadVC3d.lib"
     ws2_32
 )
 endif()
