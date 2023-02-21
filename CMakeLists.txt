@@ -59,7 +59,7 @@ if (WIN32)
     check_function_exists(_snprintf HAVE__SNPRINTF)
     check_function_exists(_snprintf_s HAVE__SNPRINTF_S)
 endif (WIN32)
-check_type_size("clockid_t" HAVE_CLOCKID_T)
+check_type_size(clockid_t HAVE_CLOCKID_T)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
@@ -73,28 +73,22 @@ endif()
 
 add_library(dsm STATIC)
 
-if(MSVC AND BUILD_SHARED_LIBS)
-    set_target_properties(dsm PROPERTIES DEF_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/dsm.def)
-    set_target_properties(dsm PROPERTIES CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${DEF_FILE_PATH}")
-endif()
-
 target_compile_definitions(${PROJECT_NAME} 
-    PUBLIC $<IF:$<CONFIG:Debug>,DEBUG,NDEBUG>
-    PUBLIC HAVE_CONFIG_H
-    PUBLIC $<$<BOOL:${MSVC}>:_WINDLL _UNICODE UNICODE _CONSOLE>
+    PRIVATE $<IF:$<CONFIG:Debug>,DEBUG,NDEBUG>
+    PRIVATE HAVE_CONFIG_H
+    PRIVATE $<$<BOOL:${MSVC}>:_UNICODE UNICODE _CONSOLE>
 )
 
 if(WIN32)
-target_link_libraries(dsm 
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/libiconv.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/libtasn1.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/libpthreadVC3d.lib"
-    ws2_32
+target_link_libraries(dsm
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libiconv.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libtasn1.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libpthreadVC3d.lib"
 )
 else()
-target_link_libraries(dsm 
-    #"${CMAKE_CURRENT_SOURCE_DIR}/lib/libiconv.a"
-    #"${CMAKE_CURRENT_SOURCE_DIR}/lib/libtasn1.a"
+target_link_libraries(dsm
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libiconv.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libtasn1.a"
 )
 endif()
 
@@ -103,7 +97,6 @@ target_include_directories(dsm PRIVATE
     "compat"
     "contrib"
     "include"
-    "include/bdsm"
     "$<$<BOOL:${MSVC}>:${CMAKE_CURRENT_SOURCE_DIR}/include/msvc>"
 )
 target_sources(dsm PRIVATE 
@@ -131,6 +124,6 @@ target_sources(dsm PRIVATE
     "contrib/rc4/rc4.c"
     "contrib/spnego/spnego_asn1.c"
 
-    "$<$<BOOL:${MSVC}>:${CMAKE_SOURCE_DIR}/compat/strlcpy.c>"
-    "$<$<BOOL:${MSVC}>:${CMAKE_SOURCE_DIR}/compat/strndup.c>"
+    "$<$<BOOL:${MSVC}>:${CMAKE_CURRENT_SOURCE_DIR}/compat/strlcpy.c>"
+    "$<$<BOOL:${MSVC}>:${CMAKE_CURRENT_SOURCE_DIR}/compat/strndup.c>"
  )
