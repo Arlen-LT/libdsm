@@ -38,8 +38,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <pthread.h>
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
+#ifdef HAVE_TIME_H
+#include <time.h>
 #endif
 
 #ifdef HAV_UNISTD_H

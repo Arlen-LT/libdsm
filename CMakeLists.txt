@@ -1,37 +1,88 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.23)
 
-project(libdsm
+include(CheckIncludeFiles)
+include(CheckSymbolExists)
+include(CheckFunctionExists)
+include(CheckLibraryExists)
+include(CheckTypeSize)
+include(CheckCXXSourceCompiles)
+include(CheckStructHasMember)
+include(TestBigEndian)
+
+project(dsm
         LANGUAGES C
         VERSION 0.4.3)
+
+check_include_files("inttypes.h" HAVE_INTTYPES_H)
+check_include_files("stdatomic.h" HAVE_STDATOMIC_H)
+check_include_files("stdlib.h" HAVE_STDLIB_H)
+check_include_files("strings.h" HAVE_STRINGS_H)
+check_include_files("string.h" HAVE_STRING_H)
+check_include_files("bsd/string.h" HAVE_BSD_STRING_H)
+check_include_files("alloca.h" HAVE_ALLOCA_H)
+check_include_files("sys/queue.h" HAVE_SYS_QUEUE_H)
+check_include_files("arpa/inet.h" HAVE_ARPA_INET_H)
+check_include_files("sys/socket.h" HAVE_SYS_SOCKET_H)
+check_include_files("time.h" HAVE_TIME_H)
+check_include_files("sys/stat.h" HAVE_SYS_STAT_H)
+check_include_files("sys/types.h" HAVE_SYS_TYPES_H)
+check_include_files("ifaddrs.h" HAVE_IFADDRS_H)
+check_include_files("unistd.h" HAVE_UNISTD_H)
+
+if (HAVE_TIME_H)
+    check_struct_has_member("struct timespec" tv_sec "time.h" HAVE_STRUCT_TIMESPEC)
+endif (HAVE_TIME_H)
+# FUNCTIONS
+CHECK_FUNCTION_EXISTS(strndup HAVE_STRNDUP)
+CHECK_FUNCTION_EXISTS(strlcpy HAVE_STRLCPY)
+CHECK_FUNCTION_EXISTS(pipe HAVE_PIPE)
+CHECK_FUNCTION_EXISTS(_pipe HAVE__PIPE)
+check_function_exists(calloc HAVE_CALLOC)
+check_function_exists(exit HAVE_EXIT)
+check_function_exists(fprintf HAVE_FPRINTF)
+check_function_exists(free HAVE_FREE)
+check_function_exists(longjmp HAVE_LONGJMP)
+check_function_exists(malloc HAVE_MALLOC)
+check_function_exists(memcpy HAVE_MEMCPY)
+check_function_exists(memset HAVE_MEMSET)
+check_function_exists(printf HAVE_PRINTF)
+check_function_exists(setjmp HAVE_SETJMP)
+check_function_exists(signal HAVE_SIGNAL)
+check_function_exists(strsignal HAVE_STRSIGNAL)
+check_function_exists(sprintf HAVE_SNPRINTF)
+check_function_exists(strcmp HAVE_STRCMP)
+check_function_exists(vsnprintf HAVE_VSNPRINTF)
+check_function_exists(clock_gettime HAVE_CLOCK_GETTIME)
+if (WIN32)
+    check_function_exists(_vsnprintf_s HAVE__VSNPRINTF_S)
+    check_function_exists(_vsnprintf HAVE__VSNPRINTF)
+    check_function_exists(_snprintf HAVE__SNPRINTF)
+    check_function_exists(_snprintf_s HAVE__SNPRINTF_S)
+endif (WIN32)
+check_type_size("clockid_t" HAVE_CLOCKID_T)
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h"
+)
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
 endif()
 
-include (CheckFunctionExists)
-CHECK_FUNCTION_EXISTS(strndup HAVE_STRNDUP)
-
-INCLUDE (CheckIncludeFiles)
-CHECK_INCLUDE_FILES("stdatomic.h" HAVE_STDATOMIC_H)
-CHECK_INCLUDE_FILES("unistd.h" HAVE_UINTSTD_H)
-CHECK_INCLUDE_FILES("ifaddrs.h" HAVE_IFADDRS_H)
-CHECK_INCLUDE_FILES("sys/queue.h" HAVE_SYS_QUEUE_H)
-CHECK_INCLUDE_FILES("sys/socket.h" HAVE_SYS_SOCKET_H)
-CHECK_INCLUDE_FILES("sys/time.h" HAVE_SYS_TIME_H)
-CHECK_INCLUDE_FILES("arpa/inet.h" HAVE_ARPA_INET_H)
-
-include(CheckTypeSize)
-SET(CMAKE_EXTRA_INCLUDE_FILES time.h)
-CHECK_TYPE_SIZE("struct timespec" HAVE_STRUCT_TIMESPEC)
-SET(CMAKE_EXTRA_INCLUDE_FILES)
 
 add_library(dsm STATIC)
 
 if(MSVC AND BUILD_SHARED_LIBS)
     set_target_properties(dsm PROPERTIES DEF_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/dsm.def)
     set_target_properties(dsm PROPERTIES CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${DEF_FILE_PATH}")
-
 endif()
+
+target_compile_definitions(${PROJECT_NAME} 
+    PUBLIC $<IF:$<CONFIG:Debug>,DEBUG,NDEBUG>
+    PUBLIC HAVE_CONFIG_H
+    PUBLIC $<$<BOOL:${MSVC}>:_WINDLL _UNICODE UNICODE _CONSOLE>
+)
 
 if(WIN32)
 target_link_libraries(dsm 
@@ -40,31 +91,11 @@ target_link_libraries(dsm
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/libpthreadVC3d.lib"
     ws2_32
 )
-endif()
-
-if(HAVE_STDATOMIC_H)
-    target_compile_definitions(dsm PRIVATE HAVE_STDATOMIC_H)
-endif()
-if(HAVE_UINTSTD_H)
-    target_compile_definitions(dsm PUBLIC HAVE_UINTSTD_H)
-endif()
-if(HAVE_IFADDRS_H)
-    target_compile_definitions(dsm PUBLIC HAVE_IFADDRS_H)
-endif()
-if(HAVE_SYS_QUEUE_H)
-    target_compile_definitions(dsm PUBLIC HAVE_SYS_QUEUE_H)
-endif()
-if(HAVE_SYS_SOCKET_H)
-    target_compile_definitions(dsm PUBLIC HAVE_SYS_SOCKET_H)
-endif()
-if(HAVE_SYS_TIME_H)
-    target_compile_definitions(dsm PUBLIC HAVE_SYS_TIME_H)
-endif()
-if(HAVE_ARPA_INET_H)
-    target_compile_definitions(dsm PUBLIC HAVE_ARPA_INET_H)
-endif()
-if(HAVE_STRUCT_TIMESPEC)
-    target_compile_definitions(dsm PUBLIC HAVE_STRUCT_TIMESPEC)
+else()
+target_link_libraries(dsm 
+    #"${CMAKE_CURRENT_SOURCE_DIR}/lib/libiconv.a"
+    #"${CMAKE_CURRENT_SOURCE_DIR}/lib/libtasn1.a"
+)
 endif()
 
 target_include_directories(dsm PRIVATE
@@ -98,7 +129,8 @@ target_sources(dsm PRIVATE
     "contrib/mdx/md4.c"
     "contrib/mdx/md5.c"
     "contrib/rc4/rc4.c"
-    "compat/strlcpy.c"
-    "compat/strndup.c"
     "contrib/spnego/spnego_asn1.c"
-)
+
+    "$<$<BOOL:${MSVC}>:${CMAKE_SOURCE_DIR}/compat/strlcpy.c>"
+    "$<$<BOOL:${MSVC}>:${CMAKE_SOURCE_DIR}/compat/strndup.c>"
+ )
