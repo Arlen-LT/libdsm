@@ -79,16 +79,22 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE $<$<BOOL:${MSVC}>:_UNICODE UNICODE _CONSOLE>
 )
 
+message("HAHA ${CMAKE_ANDROID_ARCH_ABI}")
 if(WIN32)
 target_link_libraries(dsm
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libiconv.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libtasn1.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libpthreadVC3d.lib"
 )
-else()
+elseif(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
 target_link_libraries(dsm
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libiconv.a"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libtasn1.a"
+)
+elseif(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
+target_link_libraries(dsm
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libiconv.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libtasn1.a"
 )
 endif()
 
