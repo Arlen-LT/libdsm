@@ -81,10 +81,11 @@ static int open_socket_and_connect(netbios_session *s)
 
 #else
     /* Windows */
-    if ((s->socket = socket(pf, type, 0)) < 0)
+    s->socket = socket(pf, type, 0);
+    if (s->socket == INVALID_SOCKET)
         goto error;
-
-    ioctlsocket(s->socket, FIONBIO, &(unsigned long){ 1 });
+    if (ioctlsocket(s->socket, FIONBIO, &(unsigned long){ 0 }) != NO_ERROR)
+        goto error;
 #endif
 
 #ifdef SO_NOSIGPIPE
