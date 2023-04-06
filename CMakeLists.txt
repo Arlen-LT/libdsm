@@ -80,21 +80,27 @@ target_compile_definitions(${PROJECT_NAME}
 )
 
 if(WIN32)
-target_link_libraries(dsm
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libiconv.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libtasn1.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/win64/libpthreadVC3d.lib"
-)
+    find_package(PThreads4W REQUIRED)
+    find_package(Iconv REQUIRED)
+
+    include(FindPkgConfig)
+    pkg_check_modules(TASN1 REQUIRED libtasn1>=4.19.0)
+
+    target_link_libraries(dsm PRIVATE 
+        ${TASN1_LIBRARY_DIRS}/${TASN1_LIBRARIES}.lib
+        Iconv::Iconv
+        PThreads4W::PThreads4W
+    )
 elseif(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
-target_link_libraries(dsm
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libiconv.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libtasn1.a"
-)
+    target_link_libraries(dsm
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libiconv.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libtasn1.a"
+    )
 elseif(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
-target_link_libraries(dsm
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libiconv.a"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libtasn1.a"
-)
+    target_link_libraries(dsm
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libiconv.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libtasn1.a"
+    )
 endif()
 
 target_include_directories(dsm PRIVATE
