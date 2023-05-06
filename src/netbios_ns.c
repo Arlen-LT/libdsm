@@ -950,3 +950,8 @@ int netbios_ns_discover_stop(netbios_ns *ns)
     else
         return -1;
 }
+
+bool netbios_ns_is_discovering(netbios_ns* ns)
+{
+    return ns->discover_started;
+}

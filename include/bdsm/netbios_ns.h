@@ -180,4 +180,7 @@ int netbios_ns_discover_start(netbios_ns *ns, unsigned int broadcast_timeout,
 BDSM_EXPORT
 int netbios_ns_discover_stop(netbios_ns *ns);
 
+BDSM_EXPORT
+bool netbios_ns_is_discovering(netbios_ns* ns);
+
 #endif
