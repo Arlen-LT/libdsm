@@ -122,7 +122,7 @@ struct smb_session
     smb_srv_info        srv;
 
 
-    ASN1_TYPE           spnego_asn1;
+    asn1_node           spnego_asn1;
     smb_buffer          xsec_target;
 
     smb_creds           creds;

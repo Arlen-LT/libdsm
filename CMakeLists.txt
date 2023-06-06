@@ -33,31 +33,32 @@ if (HAVE_TIME_H)
     check_struct_has_member("struct timespec" tv_sec "time.h" HAVE_STRUCT_TIMESPEC)
 endif (HAVE_TIME_H)
 # FUNCTIONS
-CHECK_FUNCTION_EXISTS(strndup HAVE_STRNDUP)
-CHECK_FUNCTION_EXISTS(strlcpy HAVE_STRLCPY)
-CHECK_FUNCTION_EXISTS(pipe HAVE_PIPE)
-CHECK_FUNCTION_EXISTS(_pipe HAVE__PIPE)
-check_function_exists(calloc HAVE_CALLOC)
-check_function_exists(exit HAVE_EXIT)
-check_function_exists(fprintf HAVE_FPRINTF)
-check_function_exists(free HAVE_FREE)
-check_function_exists(longjmp HAVE_LONGJMP)
-check_function_exists(malloc HAVE_MALLOC)
-check_function_exists(memcpy HAVE_MEMCPY)
-check_function_exists(memset HAVE_MEMSET)
-check_function_exists(printf HAVE_PRINTF)
-check_function_exists(setjmp HAVE_SETJMP)
-check_function_exists(signal HAVE_SIGNAL)
-check_function_exists(strsignal HAVE_STRSIGNAL)
-check_function_exists(sprintf HAVE_SNPRINTF)
-check_function_exists(strcmp HAVE_STRCMP)
-check_function_exists(vsnprintf HAVE_VSNPRINTF)
-check_function_exists(clock_gettime HAVE_CLOCK_GETTIME)
+check_symbol_exists(strndup "string.h" HAVE_STRNDUP)
+check_symbol_exists(strlcpy "string.h" HAVE_STRLCPY)
+check_symbol_exists(pipe "" HAVE_PIPE)
+check_symbol_exists(_pipe "" HAVE__PIPE)
+check_symbol_exists(calloc "" HAVE_CALLOC)
+check_symbol_exists(exit "" HAVE_EXIT)
+check_symbol_exists(fprintf "" HAVE_FPRINTF)
+check_symbol_exists(free "" HAVE_FREE)
+check_symbol_exists(longjmp "" HAVE_LONGJMP)
+check_symbol_exists(malloc "" HAVE_MALLOC)
+check_symbol_exists(memcpy "" HAVE_MEMCPY)
+check_symbol_exists(memset "" HAVE_MEMSET)
+check_symbol_exists(printf "" HAVE_PRINTF)
+check_symbol_exists(setjmp "" HAVE_SETJMP)
+check_symbol_exists(signal "" HAVE_SIGNAL)
+check_symbol_exists(strsignal "" HAVE_STRSIGNAL)
+check_symbol_exists(sprintf "" HAVE_SNPRINTF)
+check_symbol_exists(strcmp "" HAVE_STRCMP)
+check_symbol_exists(vsnprintf "" HAVE_VSNPRINTF)
+check_symbol_exists(clock_gettime "time.h" HAVE_CLOCK_GETTIME)
+check_symbol_exists(nl_langinfo "" HAVE_NL_LANGINFO)
 if (WIN32)
-    check_function_exists(_vsnprintf_s HAVE__VSNPRINTF_S)
-    check_function_exists(_vsnprintf HAVE__VSNPRINTF)
-    check_function_exists(_snprintf HAVE__SNPRINTF)
-    check_function_exists(_snprintf_s HAVE__SNPRINTF_S)
+    check_symbol_exists(_vsnprintf_s HAVE__VSNPRINTF_S)
+    check_symbol_exists(_vsnprintf HAVE__VSNPRINTF)
+    check_symbol_exists(_snprintf HAVE__SNPRINTF)
+    check_symbol_exists(_snprintf_s HAVE__SNPRINTF_S)
 endif (WIN32)
 check_type_size(clockid_t HAVE_CLOCKID_T)
 
@@ -77,7 +78,10 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE $<IF:$<CONFIG:Debug>,DEBUG,NDEBUG>
     PRIVATE HAVE_CONFIG_H
     PRIVATE $<$<BOOL:${MSVC}>:_UNICODE UNICODE _CONSOLE>
+    PRIVATE ASN1_DISABLE_DEPRECATED
 )
+
+target_compile_options(dsm PRIVATE -Wall -Wsign-compare -Wextra -Wstrict-aliasing -Wstrict-overflow)
 
 if(WIN32)
     find_package(PThreads4W REQUIRED)
@@ -86,8 +90,10 @@ if(WIN32)
     include(FindPkgConfig)
     pkg_check_modules(TASN1 REQUIRED libtasn1>=4.19.0)
 
+    target_include_directories(${TASN1_INCLUDE_DIRS})
+    target_link_directories(${TASN1_LIBRARY_DIRS})
     target_link_libraries(dsm PRIVATE 
-        ${TASN1_LIBRARY_DIRS}/${TASN1_LIBRARIES}.lib
+        ${TASN1_LIBRARIES}
         Iconv::Iconv
         PThreads4W::PThreads4W
     )
@@ -97,9 +103,21 @@ elseif(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
         "${CMAKE_CURRENT_SOURCE_DIR}/lib/armv7/libtasn1.a"
     )
 elseif(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
-    target_link_libraries(dsm
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libiconv.a"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/arm64/libtasn1.a"
+    set(Iconv_IS_BUILT_IN False)
+    find_package(Iconv REQUIRED)
+    check_symbol_exists(iconv_open "iconv.h" HAVE_ICONV_OPEN)
+    if(NOT HAVE_ICONV_OPEN)
+        message(FATAL_ERROR "iconv is not available")
+    endif()
+
+    include(FindPkgConfig)
+    pkg_check_modules(TASN1 REQUIRED libtasn1>=4.19.0)
+
+    target_include_directories(dsm PUBLIC ${Iconv_INCLUDE_DIR})
+    target_include_directories(dsm PUBLIC ${TASN1_INCLUDE_DIRS})
+    target_link_libraries(dsm PRIVATE 
+        ${TASN1_LIBRARY_DIRS}/lib${TASN1_LIBRARIES}.a
+        Iconv::Iconv
     )
 endif()
 

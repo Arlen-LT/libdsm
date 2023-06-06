@@ -97,7 +97,7 @@ static int      negotiate(smb_session *s, const char *domain)
     smb_message           *msg = NULL;
     smb_session_xsec_req  req;
     smb_buffer            ntlm;
-    ASN1_TYPE             token;
+    asn1_node             token;
     int                   res, der_size = 128;
     char                  der[128], err_desc[ASN1_MAX_ERROR_DESCRIPTION_SIZE];
 
@@ -180,7 +180,7 @@ static int      challenge(smb_session *s)
     smb_message           msg;
     smb_session_xsec_resp *resp;
     smb_ntlmssp_challenge *challenge;
-    ASN1_TYPE             token;
+    asn1_node             token;
     int                   res, resp_token_size = sizeof(resp_token);
 
     assert(s != NULL);
@@ -249,7 +249,7 @@ static int      auth(smb_session *s, const char *domain, const char *user,
     smb_message           *msg = NULL, resp;
     smb_session_xsec_req  req;
     smb_buffer            ntlm;
-    ASN1_TYPE             token;
+    asn1_node             token;
     int                   res, der_size = 512;
     char                  der[512], err_desc[ASN1_MAX_ERROR_DESCRIPTION_SIZE];
 
