@@ -86,14 +86,17 @@ target_compile_options(dsm PRIVATE -Wall -Wsign-compare -Wextra -Wstrict-aliasin
 if(WIN32)
     find_package(PThreads4W REQUIRED)
     find_package(Iconv REQUIRED)
+    check_symbol_exists(iconv_open "iconv.h" HAVE_ICONV_OPEN)
+    if(NOT HAVE_ICONV_OPEN)
+        message(FATAL_ERROR "iconv is not available")
+    endif()
 
     include(FindPkgConfig)
     pkg_check_modules(TASN1 REQUIRED libtasn1>=4.19.0)
 
-    target_include_directories(${TASN1_INCLUDE_DIRS})
-    target_link_directories(${TASN1_LIBRARY_DIRS})
+    target_include_directories(dsm INTERFACE ${TASN1_INCLUDE_DIRS})
     target_link_libraries(dsm PRIVATE 
-        ${TASN1_LIBRARIES}
+        ${TASN1_LIBRARY_DIRS}/${TASN1_LIBRARIES}.lib
         Iconv::Iconv
         PThreads4W::PThreads4W
     )
@@ -113,8 +116,7 @@ elseif(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
     include(FindPkgConfig)
     pkg_check_modules(TASN1 REQUIRED libtasn1>=4.19.0)
 
-    target_include_directories(dsm PUBLIC ${Iconv_INCLUDE_DIR})
-    target_include_directories(dsm PUBLIC ${TASN1_INCLUDE_DIRS})
+    target_include_directories(dsm INTERFACE ${TASN1_INCLUDE_DIRS})
     target_link_libraries(dsm PRIVATE 
         ${TASN1_LIBRARY_DIRS}/lib${TASN1_LIBRARIES}.a
         Iconv::Iconv
