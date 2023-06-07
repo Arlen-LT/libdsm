@@ -81,8 +81,6 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE ASN1_DISABLE_DEPRECATED
 )
 
-target_compile_options(dsm PRIVATE -Wall -Wsign-compare -Wextra -Wstrict-aliasing -Wstrict-overflow)
-
 if(WIN32)
     find_package(PThreads4W REQUIRED)
     find_package(Iconv REQUIRED)
