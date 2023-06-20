@@ -395,6 +395,9 @@ static ssize_t netbios_session_recv(netbios_session *s, void *buf, size_t len)
 #endif
 
         ret = select(nfds, &read_fds, NULL, NULL, NULL);
+        if (ret < 0 && errno == EINTR) 
+            continue;
+            
         if (ret < 0)
         {
             BDSM_perror("netbios_session_recv: select: ");
