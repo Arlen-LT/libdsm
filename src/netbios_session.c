@@ -250,7 +250,7 @@ int netbios_session_connect(uint32_t ip, netbios_session* s,
     if (direct_tcp)
     {
         if (custom_port)
-            ports[0] = htons(custom_port);
+            ports[0] = custom_port;
         else
             ports[0] = htons(NETBIOS_PORT_DIRECT);
         ports[1] = htons(NETBIOS_PORT_DIRECT_SECONDARY);
