@@ -61,7 +61,7 @@
 # define MSG_NOSIGNAL 0
 #endif
 
-static int open_socket_and_connect(netbios_session *s)
+static int open_socket_and_connect(netbios_session* s)
 {
     int pf = AF_INET;
     int type = SOCK_STREAM;
@@ -93,7 +93,7 @@ static int open_socket_and_connect(netbios_session *s)
     if (setsockopt(s->socket, SOL_SOCKET, SO_NOSIGPIPE, &(int){ 1 }, sizeof(int)))
         goto error;
 #endif
-    if (connect(s->socket, (struct sockaddr *)&s->remote_addr, sizeof(s->remote_addr)) <0)
+    if (connect(s->socket, (struct sockaddr*)&s->remote_addr, sizeof(s->remote_addr)) < 0)
     {
         if (errno != EINPROGRESS && errno != EINTR)
             goto error;
@@ -129,7 +129,7 @@ static int open_socket_and_connect(netbios_session *s)
             if (FD_ISSET(s->socket, &write_fds))
             {
                 if (getsockopt(s->socket, SOL_SOCKET, SO_ERROR, &ret,
-                               &(socklen_t){ sizeof (ret) }) || ret)
+                    &(socklen_t){ sizeof(ret) }) || ret)
                 {
                     errno = ret;
                     goto error;
@@ -145,16 +145,16 @@ error:
     return DSM_ERROR_NETWORK;
 }
 
-static int        session_buffer_realloc(netbios_session *s, size_t new_size)
+static int        session_buffer_realloc(netbios_session* s, size_t new_size)
 {
-    void        *new_ptr;
+    void* new_ptr;
 
     assert(s != NULL);
 
     /* BDSM_dbg("session_buffer_realloc: from %ld bytes to %ld bytes\n", */
     /*          s->packet_payload_size, new_size); */
 
-    new_ptr  = realloc(s->packet, new_size);
+    new_ptr = realloc(s->packet, new_size);
     if (new_ptr != NULL)
     {
         s->packet_payload_size = new_size;
@@ -166,12 +166,12 @@ static int        session_buffer_realloc(netbios_session *s, size_t new_size)
     return 0;
 }
 
-netbios_session *netbios_session_new(size_t buf_size)
+netbios_session* netbios_session_new(size_t buf_size)
 {
-    netbios_session   *session;
+    netbios_session* session;
     size_t            packet_size;
 
-    session = (netbios_session *)calloc(1, sizeof(netbios_session));
+    session = (netbios_session*)calloc(1, sizeof(netbios_session));
     if (!session)
         return NULL;
 
@@ -183,7 +183,7 @@ netbios_session *netbios_session_new(size_t buf_size)
 
     session->packet_payload_size = buf_size;
     packet_size = sizeof(netbios_session_packet) + session->packet_payload_size;
-    session->packet = (netbios_session_packet *)malloc(packet_size);
+    session->packet = (netbios_session_packet*)malloc(packet_size);
     if (!session->packet) {
         netbios_abort_ctx_destroy(&session->abort_ctx);
         free(session);
@@ -194,7 +194,7 @@ netbios_session *netbios_session_new(size_t buf_size)
     return session;
 }
 
-void              netbios_session_disconnect(netbios_session *s)
+void              netbios_session_disconnect(netbios_session* s)
 {
     if (!s)
         return;
@@ -206,7 +206,7 @@ void              netbios_session_disconnect(netbios_session *s)
     }
 }
 
-void              netbios_session_destroy(netbios_session *s)
+void              netbios_session_destroy(netbios_session* s)
 {
     if (!s)
         return;
@@ -216,25 +216,43 @@ void              netbios_session_destroy(netbios_session *s)
     free(s);
 }
 
-void              netbios_session_abort(netbios_session *s)
+void              netbios_session_abort(netbios_session* s)
 {
     netbios_abort_ctx_abort(&s->abort_ctx);
 }
 
-int netbios_session_connect(uint32_t ip, netbios_session *s,
-                            const char *name, int direct_tcp)
+int netbios_session_connect(uint32_t ip, netbios_session* s,
+    const char* name, int direct_tcp)
 {
     ssize_t                   recv_size;
-    char                      *encoded_name = NULL;
+    char* encoded_name = NULL;
     uint16_t                  ports[2];
     unsigned int              nb_ports;
     bool                      opened = false;
+    uint16_t                  custom_port = 0;
 
     assert(s != NULL && s->packet != NULL);
+    if (!ip && name)
+    {
+        char* port = strchr(name, ':');
+        if (port)
+            *port++ = 0;
+
+        struct addrinfo* custom_remote_addr_info = NULL;
+        int ret = getaddrinfo(name, port, NULL, &custom_remote_addr_info);
+        if (ret < 0)
+            return ret;
+
+        ip = ((struct sockaddr_in*)custom_remote_addr_info->ai_addr)->sin_addr.s_addr;
+        custom_port = ((struct sockaddr_in*)custom_remote_addr_info->ai_addr)->sin_port;
+    }
 
     if (direct_tcp)
     {
-        ports[0] = htons(NETBIOS_PORT_DIRECT);
+        if (custom_port)
+            ports[0] = htons(custom_port);
+        else
+            ports[0] = htons(NETBIOS_PORT_DIRECT);
         ports[1] = htons(NETBIOS_PORT_DIRECT_SECONDARY);
         nb_ports = 2;
     }
@@ -245,9 +263,9 @@ int netbios_session_connect(uint32_t ip, netbios_session *s,
     }
     for (unsigned int i = 0; i < nb_ports && !opened; ++i)
     {
-        s->remote_addr.sin_port         = ports[i];
-        s->remote_addr.sin_family       = AF_INET;
-        s->remote_addr.sin_addr.s_addr  = ip;
+        s->remote_addr.sin_port = ports[i];
+        s->remote_addr.sin_family = AF_INET;
+        s->remote_addr.sin_addr.s_addr = ip;
         opened = open_socket_and_connect(s) == DSM_SUCCESS;
     }
     if (!opened)
@@ -295,19 +313,19 @@ error:
     return 0;
 }
 
-void              netbios_session_packet_init(netbios_session *s)
+void              netbios_session_packet_init(netbios_session* s)
 {
     assert(s != NULL);
 
-    s->packet_cursor  = 0;
-    s->packet->flags  = 0;
+    s->packet_cursor = 0;
+    s->packet->flags = 0;
     s->packet->opcode = NETBIOS_OP_SESSION_MSG;
 }
 
-int               netbios_session_packet_append(netbios_session *s,
-        const char *data, size_t size)
+int               netbios_session_packet_append(netbios_session* s,
+    const char* data, size_t size)
 {
-    char  *start;
+    char* start;
 
     assert(s && s->packet);
 
@@ -315,21 +333,21 @@ int               netbios_session_packet_append(netbios_session *s,
         if (!session_buffer_realloc(s, size + s->packet_cursor + sizeof(netbios_session_packet)))
             return 0;
 
-    start = ((char *)&s->packet->payload) + s->packet_cursor;
+    start = ((char*)&s->packet->payload) + s->packet_cursor;
     memcpy(start, data, size);
     s->packet_cursor += size;
 
     return 1;
 }
 
-int               netbios_session_packet_send(netbios_session *s)
+int               netbios_session_packet_send(netbios_session* s)
 {
     ssize_t         to_send;
 
     assert(s && s->packet && s->socket >= 0 && s->state > 0);
 
     s->packet->length = htons(s->packet_cursor);
-    to_send           = sizeof(netbios_session_packet) + s->packet_cursor;
+    to_send = sizeof(netbios_session_packet) + s->packet_cursor;
 
     while (true)
     {
@@ -363,7 +381,7 @@ int               netbios_session_packet_send(netbios_session *s)
 
         if (FD_ISSET(s->socket, &write_fds))
         {
-            ssize_t sent = send(s->socket, (void *)s->packet, to_send, MSG_NOSIGNAL);
+            ssize_t sent = send(s->socket, (void*)s->packet, to_send, MSG_NOSIGNAL);
 
             if (sent != to_send)
             {
@@ -378,7 +396,7 @@ int               netbios_session_packet_send(netbios_session *s)
     return 0;
 }
 
-static ssize_t netbios_session_recv(netbios_session *s, void *buf, size_t len)
+static ssize_t netbios_session_recv(netbios_session* s, void* buf, size_t len)
 {
     while (true)
     {
@@ -395,9 +413,9 @@ static ssize_t netbios_session_recv(netbios_session *s, void *buf, size_t len)
 #endif
 
         ret = select(nfds, &read_fds, NULL, NULL, NULL);
-        if (ret < 0 && errno == EINTR) 
+        if (ret < 0 && errno == EINTR)
             continue;
-            
+
         if (ret < 0)
         {
             BDSM_perror("netbios_session_recv: select: ");
@@ -425,7 +443,7 @@ static ssize_t netbios_session_recv(netbios_session *s, void *buf, size_t len)
     return -1;
 }
 
-static ssize_t    netbios_session_get_next_packet(netbios_session *s)
+static ssize_t    netbios_session_get_next_packet(netbios_session* s)
 {
     ssize_t         res;
     size_t          total, sofar;
@@ -438,26 +456,26 @@ static ssize_t    netbios_session_get_next_packet(netbios_session *s)
     sofar = 0;
     while (sofar < total)
     {
-        res = netbios_session_recv(s, (uint8_t *)(s->packet) + sofar, total - sofar);
+        res = netbios_session_recv(s, (uint8_t*)(s->packet) + sofar, total - sofar);
         if (res <= 0)
             return -1;
         sofar += res;
     }
 
-    total  = ntohs(s->packet->length);
+    total = ntohs(s->packet->length);
     total |= (s->packet->flags & 0x01) << 16;
-    sofar  = 0;
+    sofar = 0;
 
     if (total + sizeof(netbios_session_packet) > s->packet_payload_size
-     && !session_buffer_realloc(s, total + sizeof(netbios_session_packet)))
+        && !session_buffer_realloc(s, total + sizeof(netbios_session_packet)))
         return -1;
 
     //BDSM_dbg("Total = %ld, sofar = %ld\n", total, sofar);
 
     while (sofar < total)
     {
-        res = netbios_session_recv(s, (uint8_t *)(s->packet) + sizeof(netbios_session_packet)
-                                   + sofar, total - sofar);
+        res = netbios_session_recv(s, (uint8_t*)(s->packet) + sizeof(netbios_session_packet)
+            + sofar, total - sofar);
         //BDSM_dbg("Total = %ld, sofar = %ld, res = %ld\n", total, sofar, res);
 
         if (res <= 0)
@@ -468,14 +486,14 @@ static ssize_t    netbios_session_get_next_packet(netbios_session *s)
     if (sofar > total)
     {
         BDSM_dbg("netbios_session_packet_recv: Packet size mismatch (%ld/%ld)\n",
-                 sofar, total);
+            sofar, total);
         return -1;
     }
 
     return sofar;
 }
 
-ssize_t           netbios_session_packet_recv(netbios_session *s, void **data)
+ssize_t           netbios_session_packet_recv(netbios_session* s, void** data)
 {
     ssize_t         size;
 
@@ -486,7 +504,7 @@ ssize_t           netbios_session_packet_recv(netbios_session *s, void **data)
     } while (size >= 0 && s->packet->opcode == NETBIOS_OP_SESSION_KEEPALIVE);
 
     if ((size >= 0) && (data != NULL))
-        *data = (void *) s->packet->payload;
+        *data = (void*)s->packet->payload;
 
     return size;
 }
