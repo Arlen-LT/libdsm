@@ -32,7 +32,7 @@
 # include "config.h"
 #endif
 
-#ifdef HAV_UNISTD_H
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -47,6 +47,7 @@
 #endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#include <netdb.h>
 #endif
 #include <fcntl.h>
 #include <errno.h>
