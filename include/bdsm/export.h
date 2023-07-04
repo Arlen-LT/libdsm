@@ -29,7 +29,7 @@
 #ifndef __BDSM_EXPORT_H_
 #define __BDSM_EXPORT_H_
 
-#if defined (_WIN32) && defined (DLL_EXPORT)
+#if defined (_WIN32)
 # define BDSM_EXPORT __declspec(dllexport)
 #elif defined (__GNUC__)
 # define BDSM_EXPORT __attribute__((visibility("default")))
