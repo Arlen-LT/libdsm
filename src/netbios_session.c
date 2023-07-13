@@ -241,8 +241,8 @@ int netbios_session_connect(uint32_t ip, netbios_session* s,
 
         struct addrinfo* custom_remote_addr_info = NULL;
         int ret = getaddrinfo(name, port, NULL, &custom_remote_addr_info);
-        if (ret < 0)
-            return ret;
+        if (ret != 0)
+            goto error;
 
         ip = ((struct sockaddr_in*)custom_remote_addr_info->ai_addr)->sin_addr.s_addr;
         custom_port = ((struct sockaddr_in*)custom_remote_addr_info->ai_addr)->sin_port;
